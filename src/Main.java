@@ -23,7 +23,16 @@ public class Main
 //        dosya_islemleri.yedekle(copys);
 
         LinkedHashMap<Path,Path> watching = new LinkedHashMap<>(1);
-        watching.put(Paths.get("C:\\Users\\altay\\Desktop\\source"),Paths.get("C:\\Users\\altay\\Desktop\\target"));
+        Path source_path = Paths.get("C:\\Users\\altay\\Desktop\\source");
+        Path target_path = Paths.get("C:\\Users\\altay\\Desktop\\target");
+        watching.put(source_path, target_path);
+        Thread temp = new dosya_islemleri.dosya_esitle(source_path, target_path);
+        temp.start();
+        try {
+            temp.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         dosya_islemleri.file_tracker tracker = new dosya_islemleri.file_tracker(watching);
         System.out.println("Hello world!");

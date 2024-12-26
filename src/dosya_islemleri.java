@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -7,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class dosya_islemleri
 {
+
     private static void deleteDirectoryRecursively(Path path) throws IOException {
         if (Files.isDirectory(path)) {
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
@@ -31,12 +33,30 @@ public class dosya_islemleri
             {
                 if(Files.isDirectory(source))
                 {
-                    throw new RuntimeException("Source can't be a directory: " + source);
+                    if(!Files.exists(target))
+                    {
+                        Files.createDirectory(target);
+                    }
+                    try(DirectoryStream<Path> stream = Files.newDirectoryStream(source))
+                    {
+                        LinkedHashMap<Path,Path> child_files = new LinkedHashMap<>();
+                        stream.forEach(path ->{
+                            child_files.put(path, target.resolve(source.relativize(path)));
+                        });
+                        yedekle(child_files);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new RuntimeException(e);
+                    }
                 }
-                Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING,
-                        StandardCopyOption.COPY_ATTRIBUTES);
+                else
+                {
+                    Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING,
+                            StandardCopyOption.COPY_ATTRIBUTES);
 
-                System.out.println("File copied successfully: " + source + " -> " + target);
+                    System.out.println("File copied successfully: " + source + " -> " + target);
+                }
             }
             catch (IOException e)
             {
@@ -108,8 +128,7 @@ public class dosya_islemleri
                {
                    if (Files.isDirectory(path))
                    {
-                       String temp = new String(path.toString());
-                       child_files.put(path, Paths.get(temp.replace(source.toString(), target.toString())));
+                       child_files.put(path, target.resolve(source.relativize(path)));
                    }
                });
            }
@@ -147,9 +166,8 @@ public class dosya_islemleri
                             throw new InterruptedException();
                         }
                         Path path = (Path) event.context();
-                        path = Path.of(source + "\\" + path);
-                        String temp_string = new String(path.toString());
-                        Path target_path = Path.of(temp_string.replace(source.toString(),target.toString()));
+                        Path target_path = target.resolve(path);
+                        path = source.resolve(path);
 
                         System.out.println("an event at :"+path + "! event kind is: " + event.kind());
                         System.out.println("affected files: " + event.context());
@@ -265,6 +283,107 @@ public class dosya_islemleri
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }
+
+        }
+    }
+
+    //----------------------------------------------------------------------------------------
+    public static class dosya_esitle extends Thread
+    {
+        Path source,target;
+        ArrayList<Thread> sub_threads = new ArrayList<>();
+        dosya_esitle(Path source,Path target)
+        {
+            this.source =source;
+            this.target = target;
+        }
+
+        @Override
+        public void run()
+        {
+            try(DirectoryStream<Path> stream = Files.newDirectoryStream(source))
+            {
+                stream.forEach(path ->{
+                    try
+                    {
+                        Path target_path = target.resolve(source.relativize(path));
+                        if(Files.isDirectory(path))
+                        {
+                            if(!Files.exists(target_path))
+                            {
+                                Files.createDirectories(target_path);
+                            }
+                            Thread temp = new dosya_esitle(path,target_path);
+                            temp.start();
+                            sub_threads.add(temp);
+                        }
+                        else
+                        {
+                            if(!Files.exists(target_path))
+                            {
+                                Files.copy(path, target_path, StandardCopyOption.COPY_ATTRIBUTES);
+                            }
+                            else
+                            {
+                                BasicFileAttributes sourceAttrs = Files.readAttributes(path, BasicFileAttributes.class);
+                                BasicFileAttributes targetAttrs = Files.readAttributes(target_path, BasicFileAttributes.class);
+                                if (sourceAttrs.lastModifiedTime().compareTo(targetAttrs.lastModifiedTime()) > 0)
+                                {
+                                    Files.copy(path, target_path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+
+            try(DirectoryStream<Path> stream = Files.newDirectoryStream(target))
+            {
+                stream.forEach(path -> {
+                    try
+                    {
+                        Path target_path = source.resolve(target.relativize(path));
+                        if(!Files.exists(target_path))
+                        {
+                            if(Files.isDirectory(path))
+                            {
+                                deleteDirectoryRecursively(path);
+                            }
+                            else
+                            {
+                                Files.delete(path);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            sub_threads.forEach(thread ->
+            {
+                try
+                {thread.join();}
+                catch (Exception e)
+                {
+                    throw new RuntimeException(e);
+                }
+            });
 
         }
     }
