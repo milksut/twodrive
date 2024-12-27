@@ -244,7 +244,7 @@ public class dosya_islemleri
         LinkedHashMap<AtomicBoolean,Thread> threads = new LinkedHashMap<>();
         HashMap<Path,AtomicBoolean> map = new HashMap<>();
 
-        file_tracker(LinkedHashMap<Path,Path> paths)
+        public file_tracker(LinkedHashMap<Path, Path> paths)
         {
             this.tracked_files = paths;
             tracked_files.forEach((source,target)->
@@ -294,7 +294,7 @@ public class dosya_islemleri
     {
         Path source,target;
         ArrayList<Thread> sub_threads = new ArrayList<>();
-        dosya_esitle(Path source,Path target)
+        public dosya_esitle(Path source, Path target)
         {
             this.source =source;
             this.target = target;

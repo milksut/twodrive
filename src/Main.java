@@ -1,16 +1,20 @@
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import gui.login_register;
+import gui.bildrimler;
 import islemler.dosya_islemleri;
+
+import javax.swing.*;
 
 public class Main
 {
     public static void main(String[] args)
     {
 
-        new login_register();
-
+       new login_register();
 
         LinkedHashMap<Path,Path> watching = new LinkedHashMap<>(1);
         Path source_path = Paths.get("C:\\Users\\altay\\Desktop\\source");
