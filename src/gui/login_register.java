@@ -46,7 +46,7 @@ public class login_register extends JFrame
                 output.setText("Kullanıcı oluşturulurken bir hata oluştu!");
                 return;
             }
-            output.setText("Kullanıcı başarıyla oluşturuldu! Lütfen Giriş yapınız.");
+            output.setText("<html>Kullanıcı başarıyla oluşturuldu!<br>Lütfen Giriş yapınız.</html>");
         });
 
         login.addActionListener(_->

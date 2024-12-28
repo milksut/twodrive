@@ -7,7 +7,13 @@ public class Paylasilan_dosya implements Serializable
 {
     private Integer paylasimci;
     private Integer alici;
-    private Path paylasilan_dosya;
+    private String paylasilan_dosya;
+
+    public Paylasilan_dosya(Integer paylasimci, Integer alici,String paylasilan_dosya) {
+        setPaylasimci(paylasimci);
+        setAlici(alici);
+        setPaylasilan_dosya(paylasilan_dosya);
+    }
 
     public Integer getPaylasimci() {
         return paylasimci;
@@ -25,11 +31,11 @@ public class Paylasilan_dosya implements Serializable
         this.alici = alici;
     }
 
-    public Path getPaylasilan_dosya() {
+    public String getPaylasilan_dosya() {
         return paylasilan_dosya;
     }
 
-    public void setPaylasilan_dosya(Path paylasilan_dosya) {
+    public void setPaylasilan_dosya(String paylasilan_dosya) {
         this.paylasilan_dosya = paylasilan_dosya;
     }
 }

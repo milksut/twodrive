@@ -5,14 +5,43 @@ import entities.Kullanici;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Kullanici_islemleri
 {
     private static HashMap<String,Integer> user_names_ids;
     private static HashMap<Integer,String> user_names_ids_reverse;
     private static final String working_directory = System.getProperty("user.dir") + "\\files";
+
+    public static Integer get_from_map(String name)
+    {
+        if(user_names_ids.containsKey(name))
+        {
+            return user_names_ids.get(name);
+        }
+        else
+        {
+            System.out.println("bu isimde kullanıcı yok! isim: " + name);
+            return -1;
+        }
+    }
+    public static String get_from_map(Integer id)
+    {
+        if(user_names_ids_reverse.containsKey(id))
+        {
+            return user_names_ids_reverse.get(id);
+        }
+        else
+        {
+            System.out.println("bu id ye sahip kullanıcı yok! id: " + id);
+            return "";
+        }
+    }
 
     static
     {
@@ -52,6 +81,7 @@ public class Kullanici_islemleri
             throw new RuntimeException(e);
         }
     }
+
     public static boolean is_username_unique(String user_name)
     {
         return !user_names_ids.containsKey(user_name);
@@ -98,7 +128,6 @@ public class Kullanici_islemleri
             throw new RuntimeException(e);
         }
     }
-
     public static Kullanici get_kullanici(Integer user_id)
     {
         try
@@ -143,5 +172,73 @@ public class Kullanici_islemleri
         kullanici.setKullanici_adi(new_name);
         kullanici_kaydet(kullanici,false);
         return true;
+    }
+    public static boolean send_notification(String message, Integer from, Integer to, Boolean add_friend)
+    {
+        if(message.trim().isEmpty())
+        {
+            System.out.println("Boş bildirim göndeilemez! from: " + from + " to: " + to);
+            return false;
+        }
+        if(!user_names_ids_reverse.containsKey(to))
+        {
+            System.out.println("Bu id ye sahip bir kullanıcı yok!");
+            return false;
+        }
+        try
+        {
+            Kullanici receiver = get_kullanici(to);
+            receiver.getBildirimler().add(message + LocalDateTime.now());
+            if(add_friend && !receiver.getTakim_uyeleri().contains(from))
+            {
+                receiver.getTakim_uyeleri().add(from);
+            }
+            kullanici_kaydet(receiver,false);
+            return true;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
+    public static String upload_file(File file,Kullanici current_user)
+    {
+        Path target_file = Path.of(working_directory + "\\" + current_user.getId());
+        double size = ((double)file.length()/ 1048576.0);//bytes to MegaBytes
+
+        if(current_user.getDosyalar().contains(file.getName()))
+        {
+            return "Bu isimde bir dosyan zaten var! dosya ismi: " + file.getName();
+        }
+
+        double target_size = dosya_islemleri.get_folder_size(target_file);
+        if(size+dosya_islemleri.get_folder_size(target_file)>current_user.getMax_file_size())
+        {
+            return String.format("Yeterli depolama alanı yok! kalan depolama miktarı: %.2f MB \n Yüklemek istediğiniz dosyanın boyutu: %.2f"
+                    ,(current_user.getMax_file_size() - target_size),size);
+        }
+
+        try
+        {
+            LinkedHashMap<Path,Path> temp = new LinkedHashMap<>(1);
+            temp.put(Path.of(file.getAbsolutePath()),target_file.resolve(file.getName()));
+            String dondu = dosya_islemleri.yedekle(temp);
+            if(dondu == "successful")
+            {
+                current_user.getDosyalar().add(file.getName());
+                kullanici_kaydet(current_user,false);
+                return String.format("Dosya yükleme başarılı! Kalan depolama alanı: %.2f MB \n Yüklediğniz dosyanın boyutu: %.2f MB",
+                        (current_user.getMax_file_size() - target_size),size);
+            }
+            return dondu;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return e.getMessage();
+        }
     }
 }

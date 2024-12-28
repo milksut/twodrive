@@ -20,7 +20,7 @@ public class dondu extends JDialog {
                 onOK();
             }
         });
-
+        messaj = new String("<html>" + messaj.replace("\n","<br>") + "</html>");
         message.setText(messaj);
 
         pack();

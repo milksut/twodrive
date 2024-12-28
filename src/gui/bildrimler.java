@@ -17,8 +17,9 @@ public class bildrimler extends JDialog {
         getRootPane().setDefaultButton(buttonOK);
 
         DefaultListModel<String> listModel = new DefaultListModel<>();
-        for (String notification : kullanici_bildirimler) {
-            listModel.addElement(notification);
+        for (String notification : kullanici_bildirimler)
+        {
+            listModel.addElement("<html>" + notification.replace("\n","<br>") + "</html>");
         }
 
         notifications_list.setModel(listModel);

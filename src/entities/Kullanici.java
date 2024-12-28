@@ -18,9 +18,11 @@ public class Kullanici implements Serializable
 
     private boolean is_admin = false;
 
+    private double max_file_size = 50.0; //as megabytes
+
     private List<Paylasilan_dosya> paylasilan_dosyalar = new ArrayList<>();
 
-    private List<Integer> takim_uyeleri = new ArrayList<>();
+    private List<Integer> takim_uyeleri = new ArrayList<>();//if admin, used for password change requests
 
     private List<String> dosyalar = new ArrayList<>();
 
@@ -121,5 +123,13 @@ public class Kullanici implements Serializable
 
     public void setChanging_password(Boolean changing_password) {
         this.changing_password = changing_password;
+    }
+
+    public double getMax_file_size() {
+        return max_file_size;
+    }
+
+    public void setMax_file_size(double max_file_size) {
+        this.max_file_size = max_file_size;
     }
 }

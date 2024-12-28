@@ -389,4 +389,34 @@ public class dosya_islemleri
 
         }
     }
+
+    //---------------------------------------------------------------------------------------------
+    public static double get_folder_size(Path directory)
+    {
+        if(!Files.isDirectory(directory))
+        {
+            System.out.println("this is not a directory! path: " +directory);
+            return 0;
+        }
+        try
+        {
+            final double[] size = {0};
+
+            Files.walkFileTree(directory, new SimpleFileVisitor<>()
+            {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    size[0] += attrs.size(); // Add file size
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+
+            return size[0]/ 1048576;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
 }
