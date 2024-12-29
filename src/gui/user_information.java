@@ -2,6 +2,7 @@ package gui;
 
 import entities.Kullanici;
 import islemler.Kullanici_islemleri;
+import islemler.my_log_writer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +24,8 @@ public class user_information extends JDialog {
 
     public user_information(Kullanici user,Kullanici admin)
     {
+        my_log_writer password_change_approve = new my_log_writer("şifre_değiştirme_onayları_log.txt");
+
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -50,6 +53,8 @@ public class user_information extends JDialog {
 
                 new dondu(user.getKullanici_adi()+" adlı kullanıcının şifre değiştirme isteği Kabul edildi!");
                 şifresiniDeğiştirmesineIzinVerButton.setEnabled(false);
+
+                password_change_approve.logInfo("Admin " + user.getKullanici_adi() + " adlı kullanıcının şifre değiştirme isteğini kabul etti!");
             });
         }
         else{şifresiniDeğiştirmesineIzinVerButton.setEnabled(false);}

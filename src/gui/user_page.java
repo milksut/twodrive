@@ -4,6 +4,7 @@ import entities.Kullanici;
 import entities.Paylasilan_dosya;
 import islemler.Kullanici_islemleri;
 import islemler.dosya_islemleri;
+import islemler.my_log_writer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -69,6 +70,10 @@ public class user_page extends JFrame
 
     user_page(Kullanici current_user)
     {
+        my_log_writer team_member_add = new my_log_writer("takım_üyesi_belirleme_log.txt");
+        my_log_writer file_share = new my_log_writer("dosya_paylaşımı_log.txt");
+        my_log_writer password_change_request = new my_log_writer("şifre_değiştirme_istekleri_log.txt");
+
         setContentPane(panel1);
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -139,6 +144,15 @@ public class user_page extends JFrame
             Boolean temp = Kullanici_islemleri.send_notification(current_user.getKullanici_adi() +
                             " Şifresini değiştirme isteği yolladı!", current_user.getId(),1,true);
             new dondu(temp ? "şifre değiştime isteği başarıyla gönderildi!" : "istek gönderilirken bir hata oluştu !");
+
+            if(temp)
+            {
+                password_change_request.logInfo(current_user.getKullanici_adi() + " Şifresini değiştirme isteğini başarıyla yolladı!");
+            }
+            else
+            {
+                password_change_request.logError(current_user.getKullanici_adi() + " Şifre değiştirme isteği yollarken bir hata ile karşılaştı!");
+            }
         });
 
         dosyaSeçButton.addActionListener(_->
@@ -180,11 +194,15 @@ public class user_page extends JFrame
                 Kullanici_islemleri.kullanici_kaydet(current_user,false);
                 team_mates.addItem(user_name);
                 new dondu(user_name + " adlı kişi başarıyla takımarkadaşı olarak eklendi");
+                team_member_add.logInfo(current_user.getKullanici_adi() + " adlı kişi "
+                        + user_name + " adlı kişiyi başarıyla takımarkadaşı olarak ekledi!");
                 return;
             }
             else
             {
                 new dondu(user_name + " adlı kişiyi arkadaş eklemeye çalışrıken bir hata ile karşılaşıldı!");
+                team_member_add.logError(current_user.getKullanici_adi() + " adlı kişi "
+                        + user_name + " adlı kişiyi arkadaş eklemeye çalışrıken bir hata ile karşılaştı!");
             }
         });
 
@@ -220,6 +238,9 @@ public class user_page extends JFrame
             Kullanici_islemleri.kullanici_kaydet(receiver,false);
 
             new dondu(shared_file+" ismindeki dosya " + receiver_name + " adlı kullanıcı ile paylaşıldı!");
+
+            file_share.logInfo(current_user.getKullanici_adi() + " adlı kullanıcı "
+                    + shared_file + " ismindeki dosyayı " + receiver_name + " adlı kullanıcı ile paylaşıltı!");
 
         });
 

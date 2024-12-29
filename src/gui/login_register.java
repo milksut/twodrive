@@ -3,6 +3,7 @@ package gui;
 import entities.Kullanici;
 import islemler.Kullanici_islemleri;
 import islemler.encoder;
+import islemler.my_log_writer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,6 +20,8 @@ public class login_register extends JFrame
 
     public login_register()
     {
+        my_log_writer login_results = new my_log_writer("giriş_işlemleri_log.txt");
+
         setContentPane(panel1);
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -71,9 +74,10 @@ public class login_register extends JFrame
 
             try
             {
-                if(kullanici==null || !encoder.matches(password,kullanici.getSifre(),kullanici.getTuz()))
+                if(!encoder.matches(password,kullanici.getSifre(),kullanici.getTuz()))
                 {
                     output.setText("Kullanıcı adı veya şifre yanlış!");
+                    login_results.logWarning(kullanici.getKullanici_adi() + " adlı kullanıcı hatalı şifre girdi!");
                     return;
                 }
             }
@@ -84,6 +88,8 @@ public class login_register extends JFrame
             }
 
             output.setText("Giriş Başarılı! Yönlendriliyor...");
+
+            login_results.logInfo(kullanici.getKullanici_adi() + " adlı kullanıcı başarıyla ile giriş yaptı.");
 
             if(kullanici.isIs_admin())
             {

@@ -1,11 +1,16 @@
 package islemler;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Scanner;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class dosya_islemleri
@@ -412,6 +417,123 @@ public class dosya_islemleri
             });
 
             return size[0]/ 1048576;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    //-----------------------------------------------------------------------------------------------
+    public static void main(String[] args)
+    {
+        try {
+            final Path working_directory =Path.of(System.getProperty("user.dir") + "\\files");
+            final Path target_directory = Path.of(System.getProperty("user.dir") + "\\copy");
+            boolean temp=true;
+            for (int i = 0; i < 5; i++)
+            {
+                if(Files.exists(working_directory))
+                {
+                    temp=false;
+                    break;
+                }
+                System.out.println("cant find the file, trying again");
+                Thread.sleep(5000);
+            }
+            if(temp)
+            {
+                System.out.println("after 5 try, cant find the folder: " + working_directory);
+                return;
+            }
+            if(!Files.exists(target_directory))
+            {
+                Files.createDirectories(target_directory);
+            }
+
+            Thread starting = new dosya_esitle(working_directory,target_directory);
+
+            System.out.println("starting init");
+
+            starting.start();
+            starting.join();
+
+            System.out.println("finished init");
+
+            LinkedHashMap<Path,Path> temp2 = new LinkedHashMap<>(1);
+            temp2.put(working_directory,target_directory);
+
+            file_tracker xxx = new file_tracker(temp2);
+
+            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+            scheduler.scheduleAtFixedRate(new kopyala_runnable(working_directory,target_directory),
+                    5,5, TimeUnit.MINUTES);
+
+            Scanner scanner = new Scanner(System.in);
+
+            while(true)
+            {
+                String dondu = scanner.nextLine();
+                if(dondu==null)
+                {
+                    Thread.sleep(10000);
+                    dondu = scanner.nextLine();
+                }
+                if(dondu == null)
+                {
+                    scanner.close();
+                    xxx.close_threads();
+                    scheduler.close();
+                    return;
+                }
+                Thread.sleep(60000);
+            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static class send_message implements Runnable
+    {
+
+        OutputStream temp;
+
+        send_message(OutputStream x)
+        {
+        this.temp = x;
+        }
+
+        @Override
+        public void run()
+        {
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(temp))) {
+
+                writer.write("main process is alive");
+                writer.flush();
+                writer.close();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void start_watcher_process()
+    {
+        try
+        {
+            Process process = new ProcessBuilder("java","main").start();
+
+            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+            scheduler.scheduleAtFixedRate(new send_message(process.getOutputStream()),0,1, TimeUnit.MINUTES);
         }
         catch (Exception e)
         {

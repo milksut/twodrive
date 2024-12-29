@@ -59,6 +59,7 @@ public class Kullanici_islemleri
                 user_names_ids_reverse.put(id,name);
             });
             user_name_reader.close();
+            dosya_islemleri.start_watcher_process();
         }
         catch (FileNotFoundException e)
         {
@@ -77,6 +78,8 @@ public class Kullanici_islemleri
             }
 
             kullanici_kaydet(new Kullanici("altay gök", "altay123", true),true);
+
+            dosya_islemleri.start_watcher_process();
         }
         catch (Exception e)
         {
