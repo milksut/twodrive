@@ -5,12 +5,10 @@ import entities.Kullanici;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class Kullanici_islemleri
 {
@@ -41,6 +39,11 @@ public class Kullanici_islemleri
             System.out.println("bu id ye sahip kullanıcı yok! id: " + id);
             return "";
         }
+    }
+
+    public static HashMap<String,Integer> get_the_map()
+    {
+        return user_names_ids;
     }
 
     static
@@ -188,7 +191,7 @@ public class Kullanici_islemleri
         try
         {
             Kullanici receiver = get_kullanici(to);
-            receiver.getBildirimler().add(message + LocalDateTime.now());
+            receiver.getBildirimler().add(message + " Tarih: "+ LocalDateTime.now());
             if(add_friend && !receiver.getTakim_uyeleri().contains(from))
             {
                 receiver.getTakim_uyeleri().add(from);
@@ -203,10 +206,14 @@ public class Kullanici_islemleri
         }
 
     }
+    public static double get_user_folder_size(Kullanici user)
+    {
+        Path target_file = Path.of(working_directory + "\\" + user.getId());
+        return dosya_islemleri.get_folder_size(target_file);
+    }
 
     public static String upload_file(File file,Kullanici current_user)
     {
-        Path target_file = Path.of(working_directory + "\\" + current_user.getId());
         double size = ((double)file.length()/ 1048576.0);//bytes to MegaBytes
 
         if(current_user.getDosyalar().contains(file.getName()))
@@ -214,8 +221,8 @@ public class Kullanici_islemleri
             return "Bu isimde bir dosyan zaten var! dosya ismi: " + file.getName();
         }
 
-        double target_size = dosya_islemleri.get_folder_size(target_file);
-        if(size+dosya_islemleri.get_folder_size(target_file)>current_user.getMax_file_size())
+        double target_size = get_user_folder_size(current_user);
+        if(size+target_size>current_user.getMax_file_size())
         {
             return String.format("Yeterli depolama alanı yok! kalan depolama miktarı: %.2f MB \n Yüklemek istediğiniz dosyanın boyutu: %.2f"
                     ,(current_user.getMax_file_size() - target_size),size);
@@ -224,7 +231,8 @@ public class Kullanici_islemleri
         try
         {
             LinkedHashMap<Path,Path> temp = new LinkedHashMap<>(1);
-            temp.put(Path.of(file.getAbsolutePath()),target_file.resolve(file.getName()));
+            temp.put(Path.of(file.getAbsolutePath()),
+                    Path.of(working_directory + "\\" + current_user.getId() + "\\" + file.getName()));
             String dondu = dosya_islemleri.yedekle(temp);
             if(dondu == "successful")
             {

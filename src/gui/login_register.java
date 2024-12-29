@@ -85,7 +85,14 @@ public class login_register extends JFrame
 
             output.setText("Giriş Başarılı! Yönlendriliyor...");
 
-            new user_page(kullanici);
+            if(kullanici.isIs_admin())
+            {
+                new admin_page(kullanici);
+            }
+            else
+            {
+                new user_page(kullanici);
+            }
 
             dispose();
 

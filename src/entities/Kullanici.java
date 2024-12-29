@@ -2,6 +2,7 @@ package entities;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import islemler.Kullanici_islemleri;
 import islemler.encoder;
@@ -22,7 +23,7 @@ public class Kullanici implements Serializable
 
     private List<Paylasilan_dosya> paylasilan_dosyalar = new ArrayList<>();
 
-    private List<Integer> takim_uyeleri = new ArrayList<>();//if admin, used for password change requests
+    private HashSet<Integer> takim_uyeleri = new HashSet<>();//if admin, used for password change requests
 
     private List<String> dosyalar = new ArrayList<>();
 
@@ -90,12 +91,12 @@ public class Kullanici implements Serializable
         this.paylasilan_dosyalar = paylasilan_dosyalar;
     }
 
-    public List<Integer> getTakim_uyeleri()
+    public  HashSet<Integer> getTakim_uyeleri()
     {
         return takim_uyeleri;
     }
 
-    public void setTakim_uyeleri(List<Integer> takim_uyeleri) {
+    public void setTakim_uyeleri( HashSet<Integer> takim_uyeleri) {
         this.takim_uyeleri = takim_uyeleri;
     }
 

@@ -200,9 +200,6 @@ public class user_page extends JFrame
                 return;
             }
 
-            Paylasilan_dosya temp = new Paylasilan_dosya(current_user.getId(),receiver_id,shared_file);
-
-            current_user.getPaylasilan_dosyalar().add(temp);
             Kullanici receiver = Kullanici_islemleri.get_kullanici(receiver_id);
 
             if(receiver == null)
@@ -211,11 +208,13 @@ public class user_page extends JFrame
                 return;
             }
 
-            receiver.getPaylasilan_dosyalar().add(temp);
-            receiver.getBildirimler().add(current_user.getKullanici_adi() + " kullanıcısı sizinle " + shared_file
-                    + " adlı dosyayı paylaştı!" + LocalDateTime.now());
+            Paylasilan_dosya temp = new Paylasilan_dosya(current_user.getId(),receiver_id,shared_file);
 
             current_user.getPaylasilan_dosyalar().add(temp);
+
+            receiver.getPaylasilan_dosyalar().add(temp);
+            receiver.getBildirimler().add(current_user.getKullanici_adi() + " kullanıcısı sizinle " + shared_file
+                    + " adlı dosyayı paylaştı! Tarih: " + LocalDateTime.now());
 
             Kullanici_islemleri.kullanici_kaydet(current_user,false);
             Kullanici_islemleri.kullanici_kaydet(receiver,false);
